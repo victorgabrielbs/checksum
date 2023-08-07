@@ -25,6 +25,7 @@
     -fx-background-radius: 500px;
     -fx-border-radius: 500px;
     -fx-text-fill: #dddddd;
+    -fx-border-color: #121212;
 }
 
 #receivedSum:focused {
