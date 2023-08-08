@@ -13,11 +13,11 @@
 }
 
 #txtFileName {
-    -fx-text-fill: #dddddd;
+    -fx-fill: #dddddd;
 }
 
 #txtResultChecksum {
-    -fx-text-fill: #dddddd;
+    -fx-fill: #dddddd;
 }
 
 #receivedSum {
@@ -28,8 +28,12 @@
     -fx-border-color: #121212;
 }
 
+#txtComparisonResult {
+    -fx-fill: #dddddd;
+}
+
 #receivedSum:focused {
-    -fx-border-color: #ffffff;
+    -fx-border-color: #dddddd;
 }
 
 Button {
