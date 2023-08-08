@@ -1,17 +1,13 @@
 package com.kldv;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.io.*;
+import java.security.*;
+import java.util.concurrent.*;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -37,77 +33,52 @@ public class PrimaryController {
     private RadioButton secondRadioButton;
 
     private File selectedFile;
-
     private String resultChecksum;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @FXML
     private void selectFile(ActionEvent event) {
-        try {
-            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Selecionar a ISO");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        selectedFile = fileChooser.showOpenDialog(stage);
 
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Selecionar a ISO");
-            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-            selectedFile = fileChooser.showOpenDialog(stage);
-
-            if (selectedFile != null) {
-                txtFileName.setText(selectedFile.getName());
-            }
-        } catch (Exception e) {
-            txtFileName.setText(e.toString());
+        if (selectedFile != null) {
+            txtFileName.setText(selectedFile.getName());
         }
     }
 
     @FXML
     private void selectAlgorithm(ActionEvent event) {
-        if (firstRadioButton.isSelected()) {
-            secondRadioButton.setSelected(false);
-            secondRadioButton.setDisable(true);
-        } else if (secondRadioButton.isSelected()) {
-            firstRadioButton.setSelected(false);
-            firstRadioButton.setDisable(true);
-        } else {
-            firstRadioButton.setDisable(false);
-            secondRadioButton.setDisable(false);
-        }
+        firstRadioButton.setDisable(secondRadioButton.isSelected());
+        secondRadioButton.setDisable(firstRadioButton.isSelected());
     }
-
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @FXML
     private void checkSum(ActionEvent event) {
-        if (firstRadioButton.isSelected() || secondRadioButton.isSelected()) {
-            String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
+        if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
+            txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
+            return;
+        }
 
-            firstRadioButton.setDisable(true);
-            secondRadioButton.setDisable(true);
+        String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
+        firstRadioButton.setDisable(true);
+        secondRadioButton.setDisable(true);
 
-            executorService.submit(() -> {
-                try {
-                    String checksum = calculateChecksum(selectedFile, algorithm);
+        executorService.submit(() -> {
+            calculateAndDisplayChecksum(algorithm);
+            enableRadioButtons();
+        });
+    }
 
-                    Platform.runLater(() -> {
-                        if (checksum != null) {
-                            resultChecksum = checksum;
-                            txtResultChecksum.setText(resultChecksum);
-                        } else {
-                            txtResultChecksum.setText("Erro ao calcular o checksum.");
-                        }
-
-                        firstRadioButton.setDisable(false);
-                        secondRadioButton.setDisable(false);
-                    });
-                } catch (NoSuchAlgorithmException | IOException e) {
-                    e.printStackTrace();
-                    Platform.runLater(() -> {
-                        txtResultChecksum.setText("Erro ao calcular o checksum.");
-                        firstRadioButton.setDisable(false);
-                        secondRadioButton.setDisable(false);
-                    });
-                }
-            });
-        } else if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
-            txtResultChecksum.setText("Marque se voce quer SHA256 ou MD5");
+    private void calculateAndDisplayChecksum(String algorithm) {
+        try {
+            String checksum = calculateChecksum(selectedFile, algorithm);
+            Platform.runLater(() -> displayChecksum(checksum));
+        } catch (NoSuchAlgorithmException | IOException e) {
+            e.printStackTrace();
+            Platform.runLater(() -> displayError());
         }
     }
 
@@ -126,6 +97,20 @@ public class PrimaryController {
             sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
+    }
+
+    private void displayChecksum(String checksum) {
+        resultChecksum = checksum;
+        txtResultChecksum.setText(resultChecksum);
+    }
+
+    private void displayError() {
+        txtResultChecksum.setText("Erro ao calcular o checksum.");
+    }
+
+    private void enableRadioButtons() {
+        firstRadioButton.setDisable(false);
+        secondRadioButton.setDisable(false);
     }
 
     @FXML
