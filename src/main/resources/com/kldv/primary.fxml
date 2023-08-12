@@ -30,7 +30,7 @@
             <Text fx:id="txtResultChecksum" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
             <Label fx:id="txtLabel" text="SHA256 que você recebeu" />
             <TextField fx:id="receivedSum" maxWidth="450.0" />
-            <Button mnemonicParsing="false" onAction="#testStrings" text="Testar" />
+            <Button fx:id="testStrings" mnemonicParsing="false" onAction="#testStrings" text="Testar" />
             <Text fx:id="txtComparisonResult" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
          </children>
       </VBox>
