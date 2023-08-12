@@ -37,15 +37,27 @@ public class PrimaryController {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @FXML
-    private void selectFile(ActionEvent event) {
-        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Selecionar a ISO");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        selectedFile = fileChooser.showOpenDialog(stage);
+    private void initialize() {
+        enableRadioButtons();
+    }
 
-        if (selectedFile != null) {
-            txtFileName.setText(selectedFile.getName());
+    @FXML
+    private void selectFile(ActionEvent event) {
+        try {
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Selecionar a ISO");
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+            selectedFile = fileChooser.showOpenDialog(stage);
+
+            if (selectedFile != null) {
+                txtFileName.setText(selectedFile.getName());
+            } else {
+                txtFileName.setText("Selecione a ISO.");
+            }
+        } catch (Exception e) {
+            txtFileName.setText("Aconteceu um problema, tente denovo");
+            System.err.println(e);
         }
     }
 
@@ -57,19 +69,25 @@ public class PrimaryController {
 
     @FXML
     private void checkSum(ActionEvent event) {
-        if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
-            txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
-            return;
+        try {
+            if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
+                txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
+                return;
+            }
+
+            String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
+            disableRadioButtons();
+            firstRadioButton.setDisable(true);
+            secondRadioButton.setDisable(true);
+
+            executorService.submit(() -> {
+                calculateAndDisplayChecksum(algorithm);
+                enableRadioButtons();
+            });
+        } catch (Exception e) {
+            txtResultChecksum.setText("Aconteceu um problema, tente denovo");
+            System.err.println(e);
         }
-
-        String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
-        firstRadioButton.setDisable(true);
-        secondRadioButton.setDisable(true);
-
-        executorService.submit(() -> {
-            calculateAndDisplayChecksum(algorithm);
-            enableRadioButtons();
-        });
     }
 
     private void calculateAndDisplayChecksum(String algorithm) {
@@ -108,6 +126,11 @@ public class PrimaryController {
         txtResultChecksum.setText("Erro ao calcular o checksum.");
     }
 
+    private void disableRadioButtons() {
+        firstRadioButton.setDisable(true);
+        secondRadioButton.setDisable(true);
+    }
+
     private void enableRadioButtons() {
         firstRadioButton.setDisable(false);
         secondRadioButton.setDisable(false);
@@ -115,10 +138,17 @@ public class PrimaryController {
 
     @FXML
     private void testStrings(ActionEvent event) {
-        if (resultChecksum != null && resultChecksum.equalsIgnoreCase(receivedSum.getText())) {
-            txtComparisonResult.setText("É igual");
-        } else {
-            txtComparisonResult.setText("Não é igual");
+        try {
+            if (receivedSum != null && !receivedSum.getText().isEmpty()) {
+                txtComparisonResult.setText(
+                        resultChecksum != null && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual" : "Não é igual");
+            } else {
+                receivedSum.setText("Escreva a soma que voce recebeu.");
+            }
+        } catch (Exception e) {
+            receivedSum.setText("Aconteceu um problema, tente denovo");
+            System.err.println(e);
         }
+
     }
 }
