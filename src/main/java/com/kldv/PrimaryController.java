@@ -38,6 +38,12 @@ public class PrimaryController {
 
     @FXML
     private void initialize() {
+        Platform.runLater(() -> {
+            Stage stage = (Stage) txtFileName.getScene().getWindow();
+            stage.setOnCloseRequest(event -> {
+                executorService.shutdown();
+            });
+        });
         enableRadioButtons();
     }
 
@@ -108,6 +114,9 @@ public class PrimaryController {
             while ((bytesCount = fis.read(byteArray)) != -1) {
                 digest.update(byteArray, 0, bytesCount);
             }
+        } catch (IOException e) {
+            txtResultChecksum.setText("Aconteceu algum problema, tente denovo");
+            System.err.println(e);
         }
         byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
@@ -137,11 +146,12 @@ public class PrimaryController {
     }
 
     @FXML
-    private void testStrings(ActionEvent event) {
+    private void compareChecksum(ActionEvent event) {
         try {
             if (receivedSum != null && !receivedSum.getText().isEmpty()) {
                 txtComparisonResult.setText(
-                        resultChecksum != null && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual" : "Não é igual");
+                        resultChecksum != null && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual"
+                                : "Não é igual");
             } else {
                 receivedSum.setText("Escreva a soma que voce recebeu.");
             }
