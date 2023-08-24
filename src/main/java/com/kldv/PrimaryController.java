@@ -3,14 +3,15 @@ package com.kldv;
 import java.io.*;
 import java.security.*;
 import java.util.concurrent.*;
-
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+import java.util.prefs.Preferences;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.fxml.FXML;
 
 public class PrimaryController {
 
@@ -36,6 +37,8 @@ public class PrimaryController {
     private String resultChecksum;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+    private Preferences userPreferences;
+
     @FXML
     private void initialize() {
         Platform.runLater(() -> {
@@ -44,7 +47,9 @@ public class PrimaryController {
                 executorService.shutdown();
             });
         });
-        enableRadioButtons();
+        firstRadioButton.setDisable(false);
+        secondRadioButton.setDisable(false);
+        userPreferences = Preferences.userNodeForPackage(getClass());
     }
 
     @FXML
@@ -53,11 +58,14 @@ public class PrimaryController {
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Selecionar a ISO");
-            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+            String lastSelectedDirectory = userPreferences.get("lastSelectedDirectory",
+                    System.getProperty("user.home"));
+            fileChooser.setInitialDirectory(new File(lastSelectedDirectory));
             selectedFile = fileChooser.showOpenDialog(stage);
 
             if (selectedFile != null) {
                 txtFileName.setText(selectedFile.getName());
+                userPreferences.put("lastSelectedDirectory", selectedFile.getParent());
             } else {
                 txtFileName.setText("Selecione a ISO.");
             }
@@ -68,9 +76,13 @@ public class PrimaryController {
     }
 
     @FXML
-    private void selectAlgorithm(ActionEvent event) {
-        firstRadioButton.setDisable(secondRadioButton.isSelected());
-        secondRadioButton.setDisable(firstRadioButton.isSelected());
+    private void firstSelectAlgorithm(ActionEvent event) {
+        secondRadioButton.setSelected(false);
+    }
+
+    @FXML
+    private void secondSelectAlgorithm(ActionEvent event) {
+        firstRadioButton.setSelected(false);
     }
 
     @FXML
@@ -82,13 +94,13 @@ public class PrimaryController {
             }
 
             String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
-            disableRadioButtons();
             firstRadioButton.setDisable(true);
             secondRadioButton.setDisable(true);
 
             executorService.submit(() -> {
                 calculateAndDisplayChecksum(algorithm);
-                enableRadioButtons();
+                firstRadioButton.setDisable(false);
+                secondRadioButton.setDisable(false);
             });
         } catch (Exception e) {
             txtResultChecksum.setText("Aconteceu um problema, tente denovo");
@@ -135,16 +147,6 @@ public class PrimaryController {
         txtResultChecksum.setText("Erro ao calcular o checksum.");
     }
 
-    private void disableRadioButtons() {
-        firstRadioButton.setDisable(true);
-        secondRadioButton.setDisable(true);
-    }
-
-    private void enableRadioButtons() {
-        firstRadioButton.setDisable(false);
-        secondRadioButton.setDisable(false);
-    }
-
     @FXML
     private void compareChecksum(ActionEvent event) {
         try {
@@ -152,8 +154,6 @@ public class PrimaryController {
                 txtComparisonResult.setText(
                         resultChecksum != null && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual"
                                 : "Não é igual");
-            } else {
-                receivedSum.setText("Escreva a soma que voce recebeu.");
             }
         } catch (Exception e) {
             receivedSum.setText("Aconteceu um problema, tente denovo");
@@ -161,4 +161,12 @@ public class PrimaryController {
         }
 
     }
+
+    @FXML
+    private void onMouseClicked(MouseEvent event) {
+        if (receivedSum.isFocused()) {
+            receivedSum.getParent().requestFocus(); // Remove o foco do TextField
+        }
+    }
+
 }

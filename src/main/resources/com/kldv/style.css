@@ -8,10 +8,6 @@
     -fx-text-fill: #dddddd;
 }
 
-#txtLabel {
-    -fx-text-fill: #dddddd;
-}
-
 #txtFileName {
     -fx-fill: #dddddd;
 }
@@ -45,4 +41,8 @@ Button {
 RadioButton {
     -fx-cursor: hand;
     -fx-text-fill: #dddddd;
+}
+
+#receivedSum{
+    -fx-alignment: center;
 }
