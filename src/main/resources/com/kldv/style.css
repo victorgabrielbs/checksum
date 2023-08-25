@@ -8,11 +8,9 @@
     -fx-text-fill: #dddddd;
 }
 
-#txtFileName {
-    -fx-fill: #dddddd;
-}
-
-#txtResultChecksum {
+#txtFileName,
+#txtResultChecksum,
+#txtComparisonResult {
     -fx-fill: #dddddd;
 }
 
@@ -24,9 +22,6 @@
     -fx-border-color: #121212;
 }
 
-#txtComparisonResult {
-    -fx-fill: #dddddd;
-}
 
 #receivedSum:focused {
     -fx-border-color: #dddddd;
@@ -43,6 +38,6 @@ RadioButton {
     -fx-text-fill: #dddddd;
 }
 
-#receivedSum{
+#receivedSum {
     -fx-alignment: center;
 }
