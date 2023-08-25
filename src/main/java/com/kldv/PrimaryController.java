@@ -3,6 +3,11 @@ package com.kldv;
 import java.io.*;
 import java.security.*;
 import java.util.concurrent.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import java.util.prefs.Preferences;
@@ -39,6 +44,8 @@ public class PrimaryController {
 
     private Preferences userPreferences;
 
+    private static final Logger logger = Logger.getLogger(PrimaryController.class.getName());
+
     @FXML
     private void initialize() {
         Platform.runLater(() -> {
@@ -47,9 +54,25 @@ public class PrimaryController {
                 executorService.shutdown();
             });
         });
+        configureLogger();
         firstRadioButton.setDisable(false);
         secondRadioButton.setDisable(false);
         userPreferences = Preferences.userNodeForPackage(getClass());
+    }
+
+    private void configureLogger() {
+        try {
+            File logFolder = new File("logs");
+            if (!logFolder.exists()) {
+                logFolder.mkdir();
+            }
+            FileHandler fileHandler = new FileHandler("logs/app.log", true);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fileHandler.setFormatter(formatter);
+            logger.addHandler(fileHandler);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -71,7 +94,8 @@ public class PrimaryController {
             }
         } catch (Exception e) {
             txtFileName.setText("Aconteceu um problema, tente denovo");
-            System.err.println(e);
+            System.err.println("Method selectFile(): " + e + "\n");
+            logger.log(Level.SEVERE, "An error occurred in selectFile() method", e);
         }
     }
 
@@ -88,33 +112,39 @@ public class PrimaryController {
     @FXML
     private void checkSum(ActionEvent event) {
         try {
-            if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
-                txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
-                return;
+            if (selectedFile.exists()) {
+                if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
+                    txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
+                    return;
+                }
+
+                String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
+                firstRadioButton.setDisable(true);
+                secondRadioButton.setDisable(true);
+
+                executorService.submit(() -> {
+                    try {
+                        String checksum = calculateChecksum(selectedFile, algorithm);
+                        Platform.runLater(() -> displayChecksum(checksum));
+                        firstRadioButton.setDisable(false);
+                        secondRadioButton.setDisable(false);
+                    } catch (NoSuchAlgorithmException | IOException e) {
+                        e.printStackTrace();
+                        System.err.println("In the Method checkSum(), executorService.submit() : " + e + "\n");
+                        logger.log(Level.SEVERE, "An error occurred in the Method checkSum(), executorService.submit()",
+                                e);
+                        Platform.runLater(() -> displayError());
+                    }
+
+                });
+            } else {
+                txtFileName.setText("O arquivo não existe mais, tente denovo");
             }
 
-            String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
-            firstRadioButton.setDisable(true);
-            secondRadioButton.setDisable(true);
-
-            executorService.submit(() -> {
-                calculateAndDisplayChecksum(algorithm);
-                firstRadioButton.setDisable(false);
-                secondRadioButton.setDisable(false);
-            });
         } catch (Exception e) {
             txtResultChecksum.setText("Aconteceu um problema, tente denovo");
-            System.err.println(e);
-        }
-    }
-
-    private void calculateAndDisplayChecksum(String algorithm) {
-        try {
-            String checksum = calculateChecksum(selectedFile, algorithm);
-            Platform.runLater(() -> displayChecksum(checksum));
-        } catch (NoSuchAlgorithmException | IOException e) {
-            e.printStackTrace();
-            Platform.runLater(() -> displayError());
+            System.err.println("Method checkSum(): " + e + "\n");
+            logger.log(Level.SEVERE, "An error occurred in checkSum() method", e);
         }
     }
 
@@ -128,7 +158,8 @@ public class PrimaryController {
             }
         } catch (IOException e) {
             txtResultChecksum.setText("Aconteceu algum problema, tente denovo");
-            System.err.println(e);
+            System.err.println("Method calculateCheckSum(): " + e + "\n");
+            logger.log(Level.SEVERE, "An error occurred in calculateChecksum() method", e);
         }
         byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
@@ -157,7 +188,8 @@ public class PrimaryController {
             }
         } catch (Exception e) {
             receivedSum.setText("Aconteceu um problema, tente denovo");
-            System.err.println(e);
+            System.err.println("Method compareChecksum(): " + e + "\n");
+            logger.log(Level.SEVERE, "An error occurred in compareChecksum() method", e);
         }
 
     }
@@ -165,7 +197,7 @@ public class PrimaryController {
     @FXML
     private void onMouseClicked(MouseEvent event) {
         if (receivedSum.isFocused()) {
-            receivedSum.getParent().requestFocus(); // Remove o foco do TextField
+            receivedSum.getParent().requestFocus();
         }
     }
 
