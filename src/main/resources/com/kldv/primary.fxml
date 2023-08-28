@@ -5,11 +5,11 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<Pane onMouseClicked="#onMouseClicked" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kldv.PrimaryController">
+<StackPane onMouseClicked="#onMouseClicked" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kldv.PrimaryController">
    <children>
       <VBox alignment="CENTER" layoutX="7.0" layoutY="9.0" prefHeight="480.0" prefWidth="680.0" spacing="21.0">
          <children>
@@ -33,4 +33,4 @@
          </children>
       </VBox>
    </children>
-</Pane>
+</StackPane>
