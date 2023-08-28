@@ -14,18 +14,26 @@ public class App extends Application {
     private static Scene scene;
 
     @Override
-    public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"));
-        stage.setTitle("Teste uma iso com sua soma de verifição");
-        Image icon = new Image(getClass()
-                .getResourceAsStream("compact-disc-solid.png"));
-        stage.getIcons().add(icon);
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage stage) {
+        try {
+            scene = new Scene(loadFXML("primary"));
+            stage.setTitle("Teste uma iso com sua soma de verifição");
+            Image icon = new Image(getClass()
+                    .getResourceAsStream("compact-disc-solid.png"));
+            stage.getIcons().add(icon);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
+    static void setRoot(String fxml) {
+        try {
+            scene.setRoot(loadFXML(fxml));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static Parent loadFXML(String fxml) throws IOException {
@@ -36,5 +44,4 @@ public class App extends Application {
     public static void main(String[] args) {
         launch();
     }
-
 }
