@@ -1,14 +1,18 @@
 package com.kldv;
 
-import java.io.*;
-import java.security.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import javafx.scene.control.*;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import java.util.prefs.Preferences;
 import javafx.application.Platform;
@@ -66,6 +70,7 @@ public class PrimaryController {
             if (!logFolder.exists()) {
                 logFolder.mkdir();
             }
+
             FileHandler fileHandler = new FileHandler("logs/app.log", true);
             SimpleFormatter formatter = new SimpleFormatter();
             fileHandler.setFormatter(formatter);
@@ -112,7 +117,7 @@ public class PrimaryController {
     @FXML
     private void checkSum(ActionEvent event) {
         try {
-            if (selectedFile.exists()) {
+            if (selectedFile != null && selectedFile.exists()) {
                 if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
                     txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
                     return;
