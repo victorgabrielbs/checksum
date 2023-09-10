@@ -44,9 +44,8 @@ public class PrimaryController {
 
     private File selectedFile;
     private String resultChecksum;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
-
     private Preferences userPreferences;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private static final Logger logger = Logger.getLogger(PrimaryController.class.getName());
 
@@ -86,8 +85,8 @@ public class PrimaryController {
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Selecionar a ISO");
-            String lastSelectedDirectory = userPreferences.get("lastSelectedDirectory",
-                    System.getProperty("user.home"));
+            String lastSelectedDirectory =
+                    userPreferences.get("lastSelectedDirectory", System.getProperty("user.home"));
             fileChooser.setInitialDirectory(new File(lastSelectedDirectory));
             selectedFile = fileChooser.showOpenDialog(stage);
 
@@ -102,16 +101,6 @@ public class PrimaryController {
             System.err.println("Method selectFile(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in selectFile() method", e);
         }
-    }
-
-    @FXML
-    private void firstSelectAlgorithm(ActionEvent event) {
-        secondRadioButton.setSelected(false);
-    }
-
-    @FXML
-    private void secondSelectAlgorithm(ActionEvent event) {
-        firstRadioButton.setSelected(false);
     }
 
     @FXML
@@ -130,15 +119,21 @@ public class PrimaryController {
                 executorService.submit(() -> {
                     try {
                         String checksum = calculateChecksum(selectedFile, algorithm);
-                        Platform.runLater(() -> displayChecksum(checksum));
+                        Platform.runLater(() -> {
+                            resultChecksum = checksum;
+                            txtResultChecksum.setText(resultChecksum);
+                        });
                         firstRadioButton.setDisable(false);
                         secondRadioButton.setDisable(false);
                     } catch (NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
-                        System.err.println("In the Method checkSum(), executorService.submit() : " + e + "\n");
-                        logger.log(Level.SEVERE, "An error occurred in the Method checkSum(), executorService.submit()",
+                        System.err.println(
+                                "In the Method checkSum(), executorService.submit() : " + e + "\n");
+                        logger.log(Level.SEVERE,
+                                "An error occurred in the Method checkSum(), executorService.submit()",
                                 e);
-                        Platform.runLater(() -> displayError());
+                        Platform.runLater(
+                                () -> txtResultChecksum.setText("Erro ao calcular o checksum."));
                     }
 
                 });
@@ -153,7 +148,8 @@ public class PrimaryController {
         }
     }
 
-    private String calculateChecksum(File file, String algorithm) throws NoSuchAlgorithmException, IOException {
+    private String calculateChecksum(File file, String algorithm)
+            throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] byteArray = new byte[1024];
@@ -174,21 +170,12 @@ public class PrimaryController {
         return sb.toString();
     }
 
-    private void displayChecksum(String checksum) {
-        resultChecksum = checksum;
-        txtResultChecksum.setText(resultChecksum);
-    }
-
-    private void displayError() {
-        txtResultChecksum.setText("Erro ao calcular o checksum.");
-    }
-
     @FXML
     private void compareChecksum(ActionEvent event) {
         try {
             if (receivedSum != null && !receivedSum.getText().isEmpty()) {
-                txtComparisonResult.setText(
-                        resultChecksum != null && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual"
+                txtComparisonResult.setText(resultChecksum != null
+                        && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual"
                                 : "Não é igual");
             }
         } catch (Exception e) {
@@ -204,6 +191,16 @@ public class PrimaryController {
         if (receivedSum.isFocused()) {
             receivedSum.getParent().requestFocus();
         }
+    }
+
+    @FXML
+    private void firstSelectAlgorithm(ActionEvent event) {
+        secondRadioButton.setSelected(false);
+    }
+
+    @FXML
+    private void secondSelectAlgorithm(ActionEvent event) {
+        firstRadioButton.setSelected(false);
     }
 
 }
