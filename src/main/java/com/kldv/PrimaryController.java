@@ -7,10 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
@@ -47,7 +45,7 @@ public class PrimaryController {
     private Preferences userPreferences;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private static final Logger logger = Logger.getLogger(PrimaryController.class.getName());
+    private static final Logger logger = LoggerConfig.configureLogger();
 
     @FXML
     private void initialize() {
@@ -57,26 +55,10 @@ public class PrimaryController {
                 executorService.shutdown();
             });
         });
-        configureLogger();
+        LoggerConfig.configureLogger();
         firstRadioButton.setDisable(false);
         secondRadioButton.setDisable(false);
         userPreferences = Preferences.userNodeForPackage(getClass());
-    }
-
-    private void configureLogger() {
-        try {
-            File logFolder = new File("logs");
-            if (!logFolder.exists()) {
-                logFolder.mkdir();
-            }
-
-            FileHandler fileHandler = new FileHandler("logs/app.log", true);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fileHandler.setFormatter(formatter);
-            logger.addHandler(fileHandler);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @FXML
@@ -98,7 +80,6 @@ public class PrimaryController {
             }
         } catch (Exception e) {
             txtFileName.setText("Aconteceu um problema, tente denovo");
-            System.err.println("Method selectFile(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in selectFile() method", e);
         }
     }
@@ -118,7 +99,7 @@ public class PrimaryController {
 
                 executorService.submit(() -> {
                     try {
-                        String checksum = calculateChecksum(selectedFile, algorithm);
+                        String checksum = calculateSum(selectedFile, algorithm);
                         Platform.runLater(() -> {
                             resultChecksum = checksum;
                             txtResultChecksum.setText(resultChecksum);
@@ -127,8 +108,6 @@ public class PrimaryController {
                         secondRadioButton.setDisable(false);
                     } catch (NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
-                        System.err.println(
-                                "In the Method checkSum(), executorService.submit() : " + e + "\n");
                         logger.log(Level.SEVERE,
                                 "An error occurred in the Method checkSum(), executorService.submit()",
                                 e);
@@ -143,12 +122,11 @@ public class PrimaryController {
 
         } catch (Exception e) {
             txtResultChecksum.setText("Aconteceu um problema, tente denovo");
-            System.err.println("Method checkSum(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in checkSum() method", e);
         }
     }
 
-    private String calculateChecksum(File file, String algorithm)
+    private String calculateSum(File file, String algorithm)
             throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -159,8 +137,7 @@ public class PrimaryController {
             }
         } catch (IOException e) {
             txtResultChecksum.setText("Aconteceu algum problema, tente denovo");
-            System.err.println("Method calculateCheckSum(): " + e + "\n");
-            logger.log(Level.SEVERE, "An error occurred in calculateChecksum() method", e);
+            logger.log(Level.SEVERE, "An error occurred in calculateSum() method", e);
         }
         byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
@@ -180,7 +157,6 @@ public class PrimaryController {
             }
         } catch (Exception e) {
             receivedSum.setText("Aconteceu um problema, tente denovo");
-            System.err.println("Method compareChecksum(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in compareChecksum() method", e);
         }
 
