@@ -66,10 +66,10 @@ public class PrimaryController {
     private void configureLogger() {
         try {
             File logFolder = new File("logs");
+
             if (!logFolder.exists()) {
                 logFolder.mkdir();
             }
-
             FileHandler fileHandler = new FileHandler("logs/app.log", true);
             SimpleFormatter formatter = new SimpleFormatter();
             fileHandler.setFormatter(formatter);
@@ -98,7 +98,6 @@ public class PrimaryController {
             }
         } catch (Exception e) {
             txtFileName.setText("Aconteceu um problema, tente denovo");
-            System.err.println("Method selectFile(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in selectFile() method", e);
         }
     }
@@ -127,8 +126,6 @@ public class PrimaryController {
                         secondRadioButton.setDisable(false);
                     } catch (NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
-                        System.err.println(
-                                "In the Method checkSum(), executorService.submit() : " + e + "\n");
                         logger.log(Level.SEVERE,
                                 "An error occurred in the Method checkSum(), executorService.submit()",
                                 e);
@@ -143,7 +140,6 @@ public class PrimaryController {
 
         } catch (Exception e) {
             txtResultChecksum.setText("Aconteceu um problema, tente denovo");
-            System.err.println("Method checkSum(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in checkSum() method", e);
         }
     }
@@ -159,7 +155,6 @@ public class PrimaryController {
             }
         } catch (IOException e) {
             txtResultChecksum.setText("Aconteceu algum problema, tente denovo");
-            System.err.println("Method calculateCheckSum(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in calculateChecksum() method", e);
         }
         byte[] bytes = digest.digest();
@@ -180,7 +175,6 @@ public class PrimaryController {
             }
         } catch (Exception e) {
             receivedSum.setText("Aconteceu um problema, tente denovo");
-            System.err.println("Method compareChecksum(): " + e + "\n");
             logger.log(Level.SEVERE, "An error occurred in compareChecksum() method", e);
         }
 
