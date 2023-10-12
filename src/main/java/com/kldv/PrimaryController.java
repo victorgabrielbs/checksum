@@ -1,9 +1,7 @@
 package com.kldv;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +43,7 @@ public class PrimaryController {
     private Preferences userPreferences;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private static final Logger logger = LoggerConfig.configureLogger();
+    private static Logger logger = LoggerConfig.configureLogger();
 
     @FXML
     private void initialize() {
@@ -64,11 +62,13 @@ public class PrimaryController {
     @FXML
     private void selectFile(ActionEvent event) {
         try {
+
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Selecionar a ISO");
-            String lastSelectedDirectory =
-                    userPreferences.get("lastSelectedDirectory", System.getProperty("user.home"));
+
+            String lastSelectedDirectory = userPreferences.get("lastSelectedDirectory",
+                    System.getProperty("user.home"));
             fileChooser.setInitialDirectory(new File(lastSelectedDirectory));
             selectedFile = fileChooser.showOpenDialog(stage);
 
@@ -78,6 +78,7 @@ public class PrimaryController {
             } else {
                 txtFileName.setText("Selecione a ISO.");
             }
+
         } catch (Exception e) {
             txtFileName.setText("Aconteceu um problema, tente denovo");
             logger.log(Level.SEVERE, "An error occurred in selectFile() method", e);
@@ -99,7 +100,7 @@ public class PrimaryController {
 
                 executorService.submit(() -> {
                     try {
-                        String checksum = calculateSum(selectedFile, algorithm);
+                        String checksum = Calculate.calculateSum(selectedFile, algorithm);
                         Platform.runLater(() -> {
                             resultChecksum = checksum;
                             txtResultChecksum.setText(resultChecksum);
@@ -112,7 +113,7 @@ public class PrimaryController {
                                 "An error occurred in the Method checkSum(), executorService.submit()",
                                 e);
                         Platform.runLater(
-                                () -> txtResultChecksum.setText("Erro ao calcular o checksum."));
+                                () -> txtResultChecksum.setText("Aconteceu algum problema, tente denovo"));
                     }
 
                 });
@@ -126,34 +127,12 @@ public class PrimaryController {
         }
     }
 
-    private String calculateSum(File file, String algorithm)
-            throws NoSuchAlgorithmException, IOException {
-        MessageDigest digest = MessageDigest.getInstance(algorithm);
-        try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] byteArray = new byte[1024];
-            int bytesCount;
-            while ((bytesCount = fis.read(byteArray)) != -1) {
-                digest.update(byteArray, 0, bytesCount);
-            }
-        } catch (IOException e) {
-            txtResultChecksum.setText("Aconteceu algum problema, tente denovo");
-            logger.log(Level.SEVERE, "An error occurred in calculateSum() method", e);
-        }
-        byte[] bytes = digest.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte aByte : bytes) {
-            sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
-        }
-        return sb.toString();
-    }
-
     @FXML
     private void compareChecksum(ActionEvent event) {
         try {
             if (receivedSum != null && !receivedSum.getText().isEmpty()) {
                 txtComparisonResult.setText(resultChecksum != null
-                        && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual"
-                                : "Não é igual");
+                        && resultChecksum.equalsIgnoreCase(receivedSum.getText()) ? "É igual" : "Não é igual");
             }
         } catch (Exception e) {
             receivedSum.setText("Aconteceu um problema, tente denovo");
