@@ -22,7 +22,7 @@
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
                <children>
                   <RadioButton fx:id="firstRadioButton" mnemonicParsing="false" onAction="#firstSelectAlgorithm" text="SHA256" />
-                  <RadioButton fx:id="secondRadioButton" mnemonicParsing="false" onAction="#secondSelectAlgorithm" text="MD5" />
+                  <RadioButton fx:id="secondRadioButton" mnemonicParsing="false" onAction="#secondSelectAlgorithm" text="SHA512" />
                </children>
             </HBox>
             <Button fx:id="checkSum" mnemonicParsing="false" onAction="#checkSum" text="Checar" />

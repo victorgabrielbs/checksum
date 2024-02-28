@@ -59,14 +59,19 @@ public class PrimaryController {
     @FXML
     private boolean selectFile(ActionEvent event) {
         try {
-
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Selecionar a ISO");
 
             String lastSelectedDirectory = userPreferences.get("lastSelectedDirectory",
                     System.getProperty("user.home"));
-            fileChooser.setInitialDirectory(new File(lastSelectedDirectory));
+            File initialDirectory = new File(lastSelectedDirectory);
+
+            if (!initialDirectory.exists() || !initialDirectory.isDirectory()) {
+                initialDirectory = new File(System.getProperty("user.home"));
+            }
+
+            fileChooser.setInitialDirectory(initialDirectory);
             selectedFile = fileChooser.showOpenDialog(stage);
 
             if (selectedFile == null) {
@@ -97,11 +102,11 @@ public class PrimaryController {
                 return false;
             }
             if (!firstRadioButton.isSelected() && !secondRadioButton.isSelected()) {
-                txtResultChecksum.setText("Marque se você quer SHA256 ou MD5");
+                txtResultChecksum.setText("Marque se você quer SHA256 ou SHA-512");
                 return false;
             }
 
-            String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "MD5";
+            String algorithm = firstRadioButton.isSelected() ? "SHA-256" : "SHA-512";
 
             firstRadioButton.setDisable(true);
             secondRadioButton.setDisable(true);
